@@ -52,7 +52,7 @@ If you find this repository helpful:
 
 ⭐ Star the repository
 
-💲 Buy Us a Coffee ☕ 
+💲 [Buy Us a Coffee ☕](https://donorbox.org/support-r_editrr)
 
 📝 Report bugs and suggest improvements
 
