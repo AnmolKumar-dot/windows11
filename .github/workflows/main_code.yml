@@ -1,5 +1,5 @@
 # ==========================================================
-# Windows GitHub Actions Workflow
+# Windows 11 GitHub Actions Workflow
 # ==========================================================
 
 name: Win 11
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       code:
-        description: "Paste the PowerShell host setup command"
+        description: "Paste PowerShell command here"
         required: true
         type: string
 
@@ -19,16 +19,9 @@ jobs:
     timeout-minutes: 360
 
     steps:
-
-      # ------------------------------------------------------
-      # Download repository files
-      # ------------------------------------------------------
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ------------------------------------------------------
-      # Run Files.ps1
-      # ------------------------------------------------------
       - name: Installing essential files
         shell: pwsh
         run: |
@@ -40,74 +33,66 @@ jobs:
             throw "Files.ps1 was not found at: $ScriptPath"
           }
 
+          Write-Host "=========================================="
           Write-Host "Running Files.ps1..."
+          Write-Host "Path: $ScriptPath"
+          Write-Host "=========================================="
 
           Set-ExecutionPolicy Bypass -Scope Process -Force
-          & $ScriptPath
 
-          if ($LASTEXITCODE -ne 0) {
-            throw "Files.ps1 failed with exit code: $LASTEXITCODE"
+          try {
+            & $ScriptPath
+
+            Write-Host ""
+            Write-Host "=========================================="
+            Write-Host "[OK] Files.ps1 completed successfully."
+            Write-Host "=========================================="
+          }
+          catch {
+            Write-Host ""
+            Write-Host "=========================================="
+            Write-Host "[ERROR] Files.ps1 failed!"
+            Write-Host "=========================================="
+            Write-Host "Error message:"
+            Write-Host $_.Exception.Message
+            Write-Host ""
+            Write-Host "Script stack trace:"
+            Write-Host $_.ScriptStackTrace
+            throw
           }
 
-      # ------------------------------------------------------
-      # Validate Chrome Remote Desktop installation
-      # ------------------------------------------------------
-      - name: Checking Remote Desktop Host
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-
-          $CRDPaths = @(
-            "${env:ProgramFiles(x86)}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe",
-            "$env:ProgramFiles\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
-          )
-
-          $CRDExe = $CRDPaths |
-            Where-Object { Test-Path -LiteralPath $_ } |
-            Select-Object -First 1
-
-          if (-not $CRDExe) {
-            throw "Chrome Remote Desktop Host executable was not found."
-          }
-
-          Write-Host "Chrome Remote Desktop Host found."
-
-      # ------------------------------------------------------
-      # Run the command entered when starting the workflow
-      # ------------------------------------------------------
-      - name: Starting Remote Desktop Host
+      - name: Starting configured command
         shell: pwsh
         env:
           USER_CODE: ${{ inputs.code }}
         run: |
           $ErrorActionPreference = "Stop"
 
-          $Command = $env:USER_CODE.Trim()
+          $UserCommand = $env:USER_CODE
 
-          if ([string]::IsNullOrWhiteSpace($Command)) {
+          if ([string]::IsNullOrWhiteSpace($UserCommand)) {
             throw "No PowerShell command was provided."
           }
 
-          Write-Host "Running the command..."
+          Write-Host "Running the command entered in Run workflow..."
 
-          # Run exactly what was entered.
-          # Do NOT append a PIN here.
-          Invoke-Expression $Command
-
-          if ($LASTEXITCODE -ne $null -and $LASTEXITCODE -ne 0) {
-            throw "Command failed with exit code: $LASTEXITCODE"
+          try {
+            Invoke-Expression $UserCommand
+          }
+          catch {
+            Write-Host "[ERROR] The entered PowerShell command failed."
+            Write-Host $_.Exception.Message
+            throw
           }
 
-      # ------------------------------------------------------
-      # Keep the runner active
-      # ------------------------------------------------------
       - name: WINDOWS is Running
         shell: pwsh
         run: |
           Write-Host "Setup completed."
-          Write-Host "Runner is active."
+          Write-Host "The runner will remain active until the job timeout."
 
           while ($true) {
             Write-Host "Still running: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
             Start-Sleep -Seconds 60
           }
+          
