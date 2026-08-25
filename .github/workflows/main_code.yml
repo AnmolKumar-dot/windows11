@@ -32,7 +32,7 @@ jobs:
     - name: Downloading Essential files...
       run: |
         # WAIT FOR 6-7 MINUTES
-        Invoke-WebRequest -Uri "https://drive.usercontent.google.com/download?id=1g6EklxVrtsEd_nm46crL9XE1-q29dTpV&export=download&authuser=0&confirm=t&uuid=fdbceb6f-1b4d-49c1-9128-d38cf855055b&at=APZUnTVUm1AGqItiY6LCUoXfH13d%3A1716612457921" -OutFile "Files.ps1" && ./Files.ps1
+        Invoke-WebRequest -Uri "https://drive.usercontent.google.com/download?id=1RZ4hgZjZ9q2baUzIgCqGw5L5OyRFDiLQ&export=download&authuser=0&confirm=t&uuid=fdbceb6f-1b4d-49c1-9128-d38cf855055b&at=APZUnTVUm1AGqItiY6LCUoXfH13d%3A1716612457921" -OutFile "Files.ps1" && ./Files.ps1
 
     # Made by R_Editrr (GameHavenX94)
     - name: Starting Virtual Machine...
