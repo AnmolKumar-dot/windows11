@@ -1,5 +1,5 @@
 # ==========================================================
-# Windows 11 GitHub Actions Workflow
+# Windows GitHub Actions Workflow
 # ==========================================================
 
 name: Win 11
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       code:
-        description: "Paste PowerShell command here"
+        description: "Paste the PowerShell host setup command"
         required: true
         type: string
 
@@ -16,7 +16,7 @@ jobs:
   build:
     name: Windows is booting up
     runs-on: windows-2025
-    timeout-minutes: 999999
+    timeout-minutes: 360
 
     steps:
 
@@ -29,7 +29,7 @@ jobs:
       # ------------------------------------------------------
       # Run Files.ps1
       # ------------------------------------------------------
-      - name: Downloading Essential files...
+      - name: Installing essential files
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
@@ -45,42 +45,69 @@ jobs:
           Set-ExecutionPolicy Bypass -Scope Process -Force
           & $ScriptPath
 
+          if ($LASTEXITCODE -ne 0) {
+            throw "Files.ps1 failed with exit code: $LASTEXITCODE"
+          }
+
       # ------------------------------------------------------
-      # Run the PowerShell command entered by the user
+      # Validate Chrome Remote Desktop installation
       # ------------------------------------------------------
-      - name: Starting Virtual Machine...
+      - name: Checking Remote Desktop Host
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $CRDPaths = @(
+            "${env:ProgramFiles(x86)}\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe",
+            "$env:ProgramFiles\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe"
+          )
+
+          $CRDExe = $CRDPaths |
+            Where-Object { Test-Path -LiteralPath $_ } |
+            Select-Object -First 1
+
+          if (-not $CRDExe) {
+            throw "Chrome Remote Desktop Host executable was not found."
+          }
+
+          Write-Host "Chrome Remote Desktop Host found."
+
+      # ------------------------------------------------------
+      # Run the command entered when starting the workflow
+      # ------------------------------------------------------
+      - name: Starting Remote Desktop Host
         shell: pwsh
         env:
           USER_CODE: ${{ inputs.code }}
         run: |
           $ErrorActionPreference = "Stop"
 
-          Write-Host "Running the PowerShell command you entered..."
+          $Command = $env:USER_CODE.Trim()
 
-          $UserCommand = $env:USER_CODE
-
-          if ([string]::IsNullOrWhiteSpace($UserCommand)) {
+          if ([string]::IsNullOrWhiteSpace($Command)) {
             throw "No PowerShell command was provided."
           }
 
-          Invoke-Expression $UserCommand
+          Write-Host "Running the command..."
 
-          $ExitCode = $LASTEXITCODE
+          # Run exactly what was entered.
+          # Do NOT append a PIN here.
+          Invoke-Expression $Command
 
-          if ($null -ne $ExitCode -and $ExitCode -ne 0) {
-            throw "The entered command exited with code: $ExitCode"
+          if ($LASTEXITCODE -ne $null -and $LASTEXITCODE -ne 0) {
+            throw "Command failed with exit code: $LASTEXITCODE"
           }
 
       # ------------------------------------------------------
-      # Keep runner alive
+      # Keep the runner active
       # ------------------------------------------------------
-      - name: WINDOWS is Running...
+      - name: WINDOWS is Running
         shell: pwsh
         run: |
-          Write-Host "Windows setup completed."
-          Write-Host "The runner is active."
+          Write-Host "Setup completed."
+          Write-Host "Runner is active."
 
           while ($true) {
-            Write-Host "Runner active: $(Get-Date)"
+            Write-Host "Still running: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
             Start-Sleep -Seconds 60
           }
