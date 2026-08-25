@@ -1,12 +1,5 @@
 # ==========================================================
-#  Windows 11 GitHub Actions Workflow
-#  Made by: R_Editrr (GameHavenX94)
-#  Copyright (c) R_Editrr / GameHavenX94
-#  All Rights Reserved.
-#
-#  This workflow is intended for personal use only.
-#  Do not redistribute, modify, or use commercially
-#  without permission from the author.
+# Windows GitHub Actions Workflow
 # ==========================================================
 
 name: Win 11
@@ -15,26 +8,104 @@ on:
   workflow_dispatch:
     inputs:
       code:
-        description: Paste Powershell Code
+        description: "Command or arguments to run after setup"
         required: true
+        type: string
 
 jobs:
   build:
     name: Windows is booting up
+
+    # Pin the runner instead of using windows-latest.
     runs-on: windows-2025
-    timeout-minutes: 999999
+
+    # Keep within the maximum allowed by your GitHub plan.
+    timeout-minutes: 99999
 
     steps:
-    # ------------------------------------------------------
-    # Made by R_Editrr (GameHavenX94)
-    # Downloading required files
-    # ------------------------------------------------------
-    - name: Downloading Essential files...
-      run: |
-        # WAIT FOR 6-7 MINUTES
-        Invoke-WebRequest -Uri "https://drive.usercontent.google.com/download?id=1RZ4hgZjZ9q2baUzIgCqGw5L5OyRFDiLQ&export=download&authuser=0&confirm=t&uuid=fdbceb6f-1b4d-49c1-9128-d38cf855055b&at=APZUnTVUm1AGqItiY6LCUoXfH13d%3A1716612457921" -OutFile "Files.ps1" && ./Files.ps1
 
-    # Made by R_Editrr (GameHavenX94)
+      # ------------------------------------------------------
+      # Get repository files, including Files.ps1
+      # ------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ------------------------------------------------------
+      # Display environment information
+      # ------------------------------------------------------
+      - name: Check Windows environment
+        shell: pwsh
+        run: |
+          Write-Host "Computer: $env:COMPUTERNAME"
+          Write-Host "User: $env:USERNAME"
+          Write-Host "Workspace: $env:GITHUB_WORKSPACE"
+          Write-Host "PowerShell: $($PSVersionTable.PSVersion)"
+          Get-ComputerInfo |
+            Select-Object WindowsProductName, WindowsVersion, OsBuildNumber |
+            Format-List
+
+      # ------------------------------------------------------
+      # Run Files.ps1 directly from the repository
+      # ------------------------------------------------------
+      - name: Running Essential Files Setup
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          $ScriptPath = Join-Path $env:GITHUB_WORKSPACE "Files.ps1"
+
+          if (-not (Test-Path -LiteralPath $ScriptPath)) {
+            throw "Files.ps1 was not found at: $ScriptPath"
+          }
+
+          Write-Host "Found Files.ps1:"
+          Write-Host $ScriptPath
+
+          Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
+
+          & $ScriptPath
+
+          if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null) {
+            throw "Files.ps1 exited with code: $LASTEXITCODE"
+          }
+
+      # ------------------------------------------------------
+      # Run user-provided command
+      # ------------------------------------------------------
+      - name: Starting configured application
+        shell: pwsh
+        env:
+          USER_CODE: ${{ inputs.code }}
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          if ([string]::IsNullOrWhiteSpace($env:USER_CODE)) {
+            throw "No command was provided."
+          }
+
+          Write-Host "Running configured command..."
+
+          Invoke-Expression $env:USER_CODE
+
+          if ($LASTEXITCODE -ne 0 -and $LASTEXITCODE -ne $null) {
+            throw "Command exited with code: $LASTEXITCODE"
+          }
+
+      # ------------------------------------------------------
+      # Keep the job alive while GitHub permits it
+      # ------------------------------------------------------
+      - name: Runner is active
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          Write-Host "Setup completed."
+          Write-Host "Runner will remain active until the job timeout."
+
+          while ($true) {
+            Write-Host "Still running: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
+            Start-Sleep -Seconds 60
+          }    # Made by R_Editrr (GameHavenX94)
     - name: Starting Virtual Machine...
       run: |
         # CONNECTING WITH VM...
