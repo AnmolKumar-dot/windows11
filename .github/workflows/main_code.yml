@@ -21,7 +21,7 @@ on:
 jobs:
   build:
     name: Windows is booting up
-    runs-on: windows-latest
+    runs-on: windows-2025
     timeout-minutes: 999999
 
     steps:
