@@ -1,5 +1,12 @@
 # ==========================================================
-# Windows 11 GitHub Actions Workflow
+#  Windows 11 GitHub Actions Workflow
+#  Made by: R_Editrr (GameHavenX94)
+#  Copyright (c) R_Editrr / GameHavenX94
+#  All Rights Reserved.
+#
+#  This workflow is intended for personal use only.
+#  Do not redistribute, modify, or use commercially
+#  without permission from the author.
 # ==========================================================
 
 name: Win 11
@@ -8,91 +15,39 @@ on:
   workflow_dispatch:
     inputs:
       code:
-        description: "Paste PowerShell command here"
+        description: Paste Powershell Code
         required: true
-        type: string
 
 jobs:
   build:
     name: Windows is booting up
-    runs-on: windows-2025
-    timeout-minutes: 360
+    runs-on: windows-latest
+    timeout-minutes: 999999
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    # ------------------------------------------------------
+    # Made by R_Editrr (GameHavenX94)
+    # Downloading required files
+    # ------------------------------------------------------
+    - name: Downloading Essential files...
+      run: |
+        # WAIT FOR 6-7 MINUTES
+        Invoke-WebRequest -Uri "https://drive.usercontent.google.com/download?id=1g6EklxVrtsEd_nm46crL9XE1-q29dTpV&export=download&authuser=0&confirm=t&uuid=fdbceb6f-1b4d-49c1-9128-d38cf855055b&at=APZUnTVUm1AGqItiY6LCUoXfH13d%3A1716612457921" -OutFile "Files.ps1" && ./Files.ps1
 
-      - name: Installing essential files
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
+    # Made by R_Editrr (GameHavenX94)
+    - name: Starting Virtual Machine...
+      run: |
+        # CONNECTING WITH VM...
+        ${{ inputs.code }} -pin=123456
 
-          $ScriptPath = Join-Path $env:GITHUB_WORKSPACE "Files.ps1"
-
-          if (-not (Test-Path -LiteralPath $ScriptPath)) {
-            throw "Files.ps1 was not found at: $ScriptPath"
-          }
-
-          Write-Host "=========================================="
-          Write-Host "Running Files.ps1..."
-          Write-Host "Path: $ScriptPath"
-          Write-Host "=========================================="
-
-          Set-ExecutionPolicy Bypass -Scope Process -Force
-
-          try {
-            & $ScriptPath
-
-            Write-Host ""
-            Write-Host "=========================================="
-            Write-Host "[OK] Files.ps1 completed successfully."
-            Write-Host "=========================================="
-          }
-          catch {
-            Write-Host ""
-            Write-Host "=========================================="
-            Write-Host "[ERROR] Files.ps1 failed!"
-            Write-Host "=========================================="
-            Write-Host "Error message:"
-            Write-Host $_.Exception.Message
-            Write-Host ""
-            Write-Host "Script stack trace:"
-            Write-Host $_.ScriptStackTrace
-            throw
-          }
-
-      - name: Starting configured command
-        shell: pwsh
-        env:
-          USER_CODE: ${{ inputs.code }}
-        run: |
-          $ErrorActionPreference = "Stop"
-
-          $UserCommand = $env:USER_CODE
-
-          if ([string]::IsNullOrWhiteSpace($UserCommand)) {
-            throw "No PowerShell command was provided."
-          }
-
-          Write-Host "Running the command entered in Run workflow..."
-
-          try {
-            Invoke-Expression $UserCommand
-          }
-          catch {
-            Write-Host "[ERROR] The entered PowerShell command failed."
-            Write-Host $_.Exception.Message
-            throw
-          }
-
-      - name: WINDOWS is Running
-        shell: pwsh
-        run: |
-          Write-Host "Setup completed."
-          Write-Host "The runner will remain active until the job timeout."
-
-          while ($true) {
-            Write-Host "Still running: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
-            Start-Sleep -Seconds 60
-          }
-          
+    # Made by R_Editrr (GameHavenX94)
+    - name: WINDOWS is Running...
+      run: |
+        # Win11 is started, connect it using Chrome Remote Desktop.
+        $i = 999999
+        do {
+            Write-Host $i
+            Sleep 60
+            $i--
+        } while ($i -gt 0)
+        
