@@ -96,7 +96,7 @@ You can watch the progress in the **Actions** log. Look for the step “Starting
 5. You are now connected to your Windows 11 Virtual Machine!
 
 ### Important Notes
-- The VM runs on a GitHub Actions Windows runner and will stay online as long as the workflow is running (the workflow has a keep-alive loop).
+- The VM runs on a GitHub Actions Windows runner and will stay online as long as the workflow is running.
 - Do **not** cancel the workflow while you are using the VM.
 - When you are finished, you can cancel the workflow from the Actions tab to free the runner.
 - This is intended for **personal and educational use only**.
