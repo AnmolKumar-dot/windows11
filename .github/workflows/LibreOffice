@@ -9,7 +9,7 @@
 #  without permission from the author.
 # ==========================================================
 
-name: Win 11
+name: LibreOffice
 
 on:
   workflow_dispatch:
