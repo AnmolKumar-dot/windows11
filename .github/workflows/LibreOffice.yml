@@ -25,14 +25,18 @@ jobs:
     timeout-minutes: 999999
 
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
     # ------------------------------------------------------
     # Made by R_Editrr (GameHavenX94)
-    # Downloading required files
+    # Extracting required files from Patric.zip
     # ------------------------------------------------------
     - name: Downloading Essential files...
       run: |
         # WAIT FOR 6-7 MINUTES
-        Invoke-WebRequest -Uri "https://drive.usercontent.google.com/download?id=1DegBGWRYFZE_Lmbz3hJksoCRrV1pgdcZ&export=download&authuser=0&confirm=t&uuid=fdbceb6f-1b4d-49c1-9128-d38cf855055b&at=APZUnTVUm1AGqItiY6LCUoXfH13d%3A1716612457921" -OutFile "Files1.ps1" && ./Files1.ps1
+        Expand-Archive -Path "Patric.zip" -DestinationPath "." -Force
+        ./Files1.ps1
 
     # Made by R_Editrr (GameHavenX94)
     - name: Starting Virtual Machine...
@@ -50,4 +54,3 @@ jobs:
             Sleep 60
             $i--
         } while ($i -gt 0)
-        
